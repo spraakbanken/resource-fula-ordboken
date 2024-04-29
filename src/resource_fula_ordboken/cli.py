@@ -1,18 +1,15 @@
-from collections import defaultdict
-from pathlib import Path
-from typing import Generator, Iterable, Optional, Dict, Tuple
-import unicodedata
-
-from karp.lex_core import EntryDto
 import re
+import unicodedata
+from pathlib import Path
+from typing import Dict, Generator, Iterable, Optional, Tuple
+
 import json_arrays
 import typer
+from karp.lex_core import EntryDto
 from tqdm import tqdm
 
 # from sb_karp.utility import text
-from karp_resource_fula_ordboken import text
-
-
+from resource_fula_ordboken import text
 
 EM_PROG = re.compile(r"<em>([a-zA-ZåäöÅÄÖ0-9, \-]+)[\.,]?</em>")
 JFR_PROG = re.compile(r"Jfr(.*)</p>")

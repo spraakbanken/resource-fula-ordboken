@@ -1,3 +1,5 @@
+"""This package prepares fula-ordboken for Karp."""
+
 __version__ = "0.1.0"
 
 
