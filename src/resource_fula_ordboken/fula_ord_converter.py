@@ -1,6 +1,8 @@
+"""Converter for Fula Ordboken."""
+
 import re
-from typing import Generator, Iterable
 import unicodedata
+from collections.abc import Generator, Iterable
 
 from resource_fula_ordboken import text
 
@@ -17,11 +19,15 @@ def shave_marks(txt: str) -> str:
 
 
 class FulaOrdTxt2JsonConverter:
+    """Convert Fula Ordboken from txt to jsonl."""
+
     def __init__(self) -> None:
-        self.fulaord_ids = set()
-        self.fulaord_wordforms = {}
+        """Construct the converter."""
+        self.fulaord_ids: set[str] = set()
+        self.fulaord_wordforms: dict[str, str] = {}
 
     def generate_id(self, baseform: str) -> str:
+        """Generate id unique for this resource."""
         i = 1
         baseform = baseform.replace(" ", "_").replace(",", "_").lower()
         baseform = shave_marks(baseform)
@@ -32,7 +38,8 @@ class FulaOrdTxt2JsonConverter:
         self.fulaord_ids.add(entry_id)
         return entry_id
 
-    def convert_entry(self, fp) -> Generator[dict, None, None]:
+    def convert_entry(self, fp) -> Generator[dict, None, None]:  # noqa: ANN001
+        """Generate converted entries from file."""
         next_word = None
         while True:
             try:
@@ -69,7 +76,7 @@ class FulaOrdTxt2JsonConverter:
             entry["id"] = self.generate_id(entry["baseform"])
             self.fulaord_wordforms[entry["baseform"]] = entry["id"]
             if len(_wordforms) > 1:
-                wordforms = list(map(lambda s: s.strip(), _wordforms[1:]))
+                wordforms = [s.strip() for s in _wordforms[1:]]
                 for wordform in wordforms:
                     self.fulaord_wordforms[wordform] = entry["id"]
             else:
@@ -89,6 +96,7 @@ class FulaOrdTxt2JsonConverter:
             yield entry
 
     def update_jfr(self, lex_iter: Iterable[dict]) -> Generator[dict, None, None]:
+        """Update jfr field."""
         for obj in lex_iter:
             if "jfr" in obj:
                 new_jfrs = []

@@ -14,6 +14,17 @@ subapp = typer.Typer()
 
 
 @subapp.command()
+def package_raw(path: Path) -> None:  # noqa: ARG001
+    """Package raw as SimpleArchive for Metadata Repo."""
+    raise NotImplementedError("Package raw as SimpleArchive for Metadata Repo.")
+
+
+@subapp.command()
+def raw2clean(path: Path) -> None:  # noqa: ARG001
+    """Clean the raw data and packages the cleaned data."""
+    raise NotImplementedError("Clean the raw data and packages the cleaned data.")
+
+
 @subapp.command()
 def convert(
     path: Path,
@@ -25,7 +36,7 @@ def convert(
         output = Path(f"{path}.jsonl")
     typer.echo(f"writing output to '{output}' ...", err=True)
     converter = FulaOrdTxt2JsonConverter()
-    with open(path) as fp:
+    with path.open(encoding="utf-8") as fp:
         typer.echo("converting entries ...", err=True)
         fulaord = list(converter.convert_entry(fp))
         typer.echo(f"updating 'jfr' and writing to '{output}' ...", err=True)
@@ -65,10 +76,6 @@ def find_updates_cmd(
     output = Path(f"{path}.updates.jsonl")
     typer.echo(f"Writing updates to {output} ...", err=True)
     json_arrays.dump_to_file(updates, output)
-
-
-def init_app(app):
-    app.add_typer(subapp, name="fulaord")
 
 
 if __name__ == "__main__":

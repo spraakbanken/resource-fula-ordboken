@@ -1,3 +1,5 @@
+"""Find updates."""
+
 from pathlib import Path
 
 import json_arrays
@@ -6,6 +8,15 @@ from tqdm import tqdm
 
 
 def find_updates_from_export(path: Path, baseline: Path) -> tuple[list, list, list[str]]:
+    """Find updates from Karp export.
+
+    Args:
+        path (Path): new entries
+        baseline (Path): the last used entries
+
+    Returns:
+        tuple[list, list, list[str]]: entries to add, update, delete
+    """
     base = {
         obj["entry"]["id"]: EntryDto(**obj)
         for obj in tqdm(
@@ -38,7 +49,7 @@ def find_updates_from_export(path: Path, baseline: Path) -> tuple[list, list, li
             if curr_entry != base[key].entry:
                 updates.append(
                     {
-                        "entity_id": base[key].entity_id,
+                        "entity_id": base[key].id,
                         "version": base[key].version,
                         "entry": curr_entry,
                     }
@@ -50,6 +61,15 @@ def find_updates_from_export(path: Path, baseline: Path) -> tuple[list, list, li
 
 
 def find_updates_old_format(path: Path, baseline: Path) -> tuple[list, list, list[str]]:
+    """Find updates from old format.
+
+    Args:
+        path (Path): new entries
+        baseline (Path): existing entries
+
+    Returns:
+        tuple[list, list, list[str]]: entries to add, update, delete
+    """
     base = {
         obj["id"]: obj
         for obj in tqdm(
