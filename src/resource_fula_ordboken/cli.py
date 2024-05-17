@@ -7,16 +7,24 @@ import json_arrays
 import typer
 
 # from sb_karp.utility import text
-from resource_fula_ordboken import find_updates
+from resource_fula_ordboken import find_updates, use_cases
 from resource_fula_ordboken.fula_ord_converter import FulaOrdTxt2JsonConverter
+from resource_fula_ordboken.shared import files
 
 subapp = typer.Typer()
 
 
 @subapp.command()
-def package_raw(path: Path) -> None:  # noqa: ARG001
-    """Package raw as SimpleArchive for Metadata Repo."""
-    raise NotImplementedError("Package raw as SimpleArchive for Metadata Repo.")
+def package_raw(path: Path, output: Optional[Path] = None) -> None:  # noqa: UP007
+    """Package raw file as SimpleArchive for Metadata Repo."""
+    date_issued = path.stem.split(" ")[-1]
+    if not output:
+        output = Path("data/data_raw")
+        output_name = files.normalize_file_name(path.stem)
+        output /= f"{output_name}.saf.zip"
+    use_cases.package_file_as_simple_archive(
+        file=path, title=path.stem, date_issued=date_issued, output_path=output
+    )
 
 
 @subapp.command()
