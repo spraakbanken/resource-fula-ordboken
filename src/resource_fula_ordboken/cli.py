@@ -3,11 +3,10 @@
 from pathlib import Path
 from typing import Optional
 
-import json_arrays
 import typer
 
 # from sb_karp.utility import text
-from resource_fula_ordboken import find_updates, use_cases
+from resource_fula_ordboken import use_cases
 from resource_fula_ordboken.shared import files
 
 subapp = typer.Typer()
@@ -61,36 +60,24 @@ def clean2karp(
     )
 
 
-@subapp.command(name="find_update")
-def find_updates_cmd(
+@subapp.command()
+def karp_as_batch(
     path: Path,
     baseline: Path = typer.Option(...),
-    from_export: bool = typer.Option(
-        True, help="The baseline is exported from karp and has entity_ids"
-    ),
+    output: Optional[Path] = typer.Option(None, help="file to write to"),  # noqa: UP007
 ) -> None:
     """Compute updates for converted entries and a given baseline.
 
-    This command computes and separates entries to add, update and delete.
+    This command computes and creates a batch of commands for updating fula ordboken in .
     """
-    typer.echo(f"Using '{baseline}' as baseline", err=True)
-
-    if from_export:
-        adds, updates, removes = find_updates.find_updates_from_export(path, baseline)
-    else:
-        adds, updates, removes = find_updates.find_updates_old_format(path, baseline)
-
-    output = Path(f"{path}.adds.jsonl")
-    typer.echo(f"Writing adds to {output} ...", err=True)
-    json_arrays.dump_to_file(adds, output)
-
-    output = Path(f"{path}.removes.jsonl")
-    typer.echo(f"Writing removes to {output} ...", err=True)
-    json_arrays.dump_to_file(removes, output)
-
-    output = Path(f"{path}.updates.jsonl")
-    typer.echo(f"Writing updates to {output} ...", err=True)
-    json_arrays.dump_to_file(updates, output)
+    msg = files.real_stem(path.stem)
+    date_issued = msg.split("_")[-1]
+    if not output:
+        output = Path("data/data_processed")
+        output_path = output / f"fula-ordboken-batch-{date_issued}.jsonl.gz"
+    use_cases.create_karp_batch_from_export(
+        path, baseline=baseline, output_path=output_path, msg=msg
+    )
 
 
 if __name__ == "__main__":
