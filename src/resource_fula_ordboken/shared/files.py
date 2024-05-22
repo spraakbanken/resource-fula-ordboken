@@ -22,6 +22,33 @@ def normalize_file_name(name: str) -> str:
     return normalized_name.replace(" ", "_")
 
 
+def real_stem(possible_stem: str) -> str:
+    """Extract the real stem of a file name.
+
+    Removes all suffixes.
+
+    >>> real_stem('file')
+    'file'
+    >>> real_stem('file.ext')
+    'file'
+    >>> real_stem('file.ext1.ext2')
+    'file'
+    >>> real_stem('file.ext1.ext2.ext3')
+    'file'
+
+    Args:
+        possible_stem (str): strips all extensions from this file name
+
+    Returns:
+        str: stem
+    """
+    path = Path(possible_stem)
+    while True:
+        if not path.suffix:
+            return path.stem
+        path = Path(path.stem)
+
+
 def detect_encoding(path: Path) -> ResultDict:
     """Detect encoding of file by reading as little as possible.
 

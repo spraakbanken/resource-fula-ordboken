@@ -48,7 +48,7 @@ def clean2karp(
     date_issued = path.stem.split("_")[-1]
     if not output:
         output = Path("data/data_processed")
-        output_name = files.normalize_file_name(path.stem)
+        output_name = files.normalize_file_name(files.real_stem(path.stem))
         json_output = output / f"{output_name}.jsonl.gz"
         saf_output = output / f"{output_name}.processed.saf.zip"
 

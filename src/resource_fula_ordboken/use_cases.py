@@ -2,8 +2,8 @@
 
 import csv
 import shutil
+import zipfile
 from pathlib import Path
-from zipfile import ZipFile
 
 import json_arrays
 from simple_archive.use_cases import CreateSimpleArchiveFromCSVWriteToPath, create_unique_path
@@ -70,7 +70,7 @@ def clean_data_and_package(
 
     working_dir.mkdir(parents=True)
 
-    with ZipFile(file) as zipf:
+    with zipfile.ZipFile(file) as zipf:
         zipf.extractall(path=working_dir)
 
     file_names = []
@@ -126,18 +126,22 @@ def convert_and_package(
 
     converter = FulaOrdTxt2JsonConverter()
 
-    json_output.parent.mkdir(parents=True)
-    if file.suffix == "txt":
+    json_output.parent.mkdir(parents=True, exist_ok=True)
+    if file.suffix == ".txt":
         with file.open(encoding="utf-8") as fp:
             fulaord = list(converter.convert_entry(fp))
             json_arrays.dump_to_file(converter.update_jfr(fulaord), json_output)
-    elif file.suffix == "zip":
-        with ZipFile(file) as zipf:
-            for file_name in zipf.namelist:
+    elif file.suffix == ".zip":
+        with zipfile.ZipFile(file) as zipf:
+            for file_name in zipf.namelist():
                 if file_name.endswith(".txt"):
-                    with zipf.open(file_name) as fp:
+                    file_path = zipfile.Path(zipf, at=file_name)
+                    with file_path.open(encoding="utf-8") as fp:
                         fulaord = list(converter.convert_entry(fp))
-                        json_arrays.dump_to_file(converter.update_jfr(fulaord), json_output)
+                        json_arrays.dump_to_file(
+                            (entry.model_dump_json() for entry in converter.update_jfr(fulaord)),
+                            json_output,
+                        )
     else:
         raise ValueError(f"unknown file extension ('{file.suffix}')")
 
