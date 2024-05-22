@@ -5,11 +5,11 @@ import shutil
 from pathlib import Path
 from zipfile import ZipFile
 
-from chardet import UniversalDetector
-from chardet.resultdict import ResultDict
+import json_arrays
 from simple_archive.use_cases import CreateSimpleArchiveFromCSVWriteToPath, create_unique_path
 
-from resource_fula_ordboken import text
+from resource_fula_ordboken.fula_ord_converter import FulaOrdTxt2JsonConverter
+from resource_fula_ordboken.shared import files
 
 
 def package_file_as_simple_archive(
@@ -78,9 +78,9 @@ def clean_data_and_package(
         if path.is_dir():
             continue
 
-        change_encoding_to_utf8(path)
+        files.change_encoding_to_utf8(path)
 
-        unescape_file(path)
+        files.unescape_file(path)
         file_names.append(path.name)
 
     csv_path = working_dir / "metadata.csv"
@@ -96,58 +96,63 @@ def clean_data_and_package(
     create_simplearchive.execute(csv_path, output_path=output_path, create_zip=True)
 
 
-def detect_encoding(path: Path) -> ResultDict:
-    """Detect encoding of file by reading as little as possible.
+def convert_and_package(
+    file: Path,
+    *,
+    title: str,
+    date_issued: str,
+    json_output: Path,
+    saf_output: Path,
+    workdir: Path | None = None,
+) -> None:
+    """Convert Fula Ordboken txt to karp7 jsonl.
 
     Args:
-        path (Path): the file to scan
+        file (Path): file with cleaned data
+        title (str): title the use
+        date_issued (str): date issued
+        json_output (Path): path where to write karp json
+        saf_output (Path): path to create the Simple Archive
+        workdir (Path | None, optional): workdir. Defaults to None.
 
-    Returns:
-        dict: the result
+    Raises:
+        ValueError: If the extension of file is unknown.
     """
-    detector = UniversalDetector()
-    for line in path.open("rb"):
-        detector.feed(line)
-        if detector.done:
-            break
-    return detector.close()
+    working_dir = workdir or Path("tmp")
 
+    working_dir = create_unique_path(working_dir, file.stem)
 
-def unescape_file(src_path: Path) -> None:
-    """Unescape the contents of given path.
+    working_dir.mkdir(parents=True)
 
-    Writes a temporary file that is moved to replace the original file.
+    converter = FulaOrdTxt2JsonConverter()
 
-    Args:
-        src_path (Path): path to file
-    """
-    dst_path = src_path.with_suffix(f"{src_path.suffix}.swp")
-    with dst_path.open("w", encoding="utf-8") as unescaped_file:
-        for line in src_path.open(encoding="utf-8"):
-            unescaped_file.write(text.unescape_str(line))
+    json_output.parent.mkdir(parents=True)
+    if file.suffix == "txt":
+        with file.open(encoding="utf-8") as fp:
+            fulaord = list(converter.convert_entry(fp))
+            json_arrays.dump_to_file(converter.update_jfr(fulaord), json_output)
+    elif file.suffix == "zip":
+        with ZipFile(file) as zipf:
+            for file_name in zipf.namelist:
+                if file_name.endswith(".txt"):
+                    with zipf.open(file_name) as fp:
+                        fulaord = list(converter.convert_entry(fp))
+                        json_arrays.dump_to_file(converter.update_jfr(fulaord), json_output)
+    else:
+        raise ValueError(f"unknown file extension ('{file.suffix}')")
 
-    dst_path.replace(src_path)
+    local_file = working_dir / json_output.name
+    shutil.copy(json_output, local_file)
 
+    csv_path = working_dir / "metadata.csv"
 
-def change_encoding_to_utf8(src_path: Path, encoding: str | None = None) -> None:
-    """Change encoding of the file from 'src_encoding' to 'utf-8'.
+    with csv_path.open("w", encoding="utf-8") as fp:
+        csv_writer = csv.DictWriter(fp, fieldnames=("files", "dc.title", "dc.date.issued"))
+        csv_writer.writeheader()
+        csv_writer.writerow(
+            {"files": local_file.name, "dc.title": title, "dc.date.issued": date_issued}
+        )
 
-    Writes a temporary file that is moved to replace the src_path.
+    create_simplearchive = CreateSimpleArchiveFromCSVWriteToPath()
 
-    Args:
-        src_path (Path): path to the file
-        encoding (str): encoding of the file
-    """
-    dst_path = src_path.with_suffix(f"{src_path.suffix}.swp")
-
-    src_encoding = encoding or detect_encoding(src_path)["encoding"]
-    if src_encoding in {"ascii", "utf-8"}:
-        return
-    with (
-        src_path.open(encoding=src_encoding) as src_file,
-        dst_path.open("w", encoding="utf-8") as dst_file,
-    ):
-        for line in src_file:
-            dst_file.write(line)
-
-    dst_path.replace(src_path)
+    create_simplearchive.execute(csv_path, output_path=saf_output, create_zip=True)
