@@ -8,7 +8,6 @@ import typer
 
 # from sb_karp.utility import text
 from resource_fula_ordboken import find_updates, use_cases
-from resource_fula_ordboken.fula_ord_converter import FulaOrdTxt2JsonConverter
 from resource_fula_ordboken.shared import files
 
 subapp = typer.Typer()
@@ -36,29 +35,30 @@ def raw2clean(path: Path, output: Optional[Path] = None) -> None:  # noqa: UP007
         output_name = files.normalize_file_name(path.stem)
         output /= f"{output_name}.clean.saf.zip"
     use_cases.clean_data_and_package(
-        file=path, title=path.stem, date_issued=date_issued, output_path=output
+        file=path, title=f"{path.stem} (cleaned)", date_issued=date_issued, output_path=output
     )
 
 
 @subapp.command()
-def convert(
+def clean2karp(
     path: Path,
     output: Optional[Path] = typer.Option(None, help="file to write to"),  # noqa: UP007
 ) -> None:
-    """Convert FulaOrd entries."""
-    typer.echo(f"reading '{path}' ...", err=True)
+    """Convert FulaOrd entries from clean data."""
+    date_issued = path.stem.split("_")[-1]
     if not output:
-        output = Path(f"{path}.jsonl")
-    typer.echo(f"writing output to '{output}' ...", err=True)
-    converter = FulaOrdTxt2JsonConverter()
-    with path.open(encoding="utf-8") as fp:
-        typer.echo("converting entries ...", err=True)
-        fulaord = list(converter.convert_entry(fp))
-        typer.echo(f"updating 'jfr' and writing to '{output}' ...", err=True)
-        json_arrays.dump_to_file(converter.update_jfr(fulaord), output)
-        # for length, entry in enumerate(convert_entry(fp), 1):
-        #     pass
-        # print(f"number of words: {length}")
+        output = Path("data/data_processed")
+        output_name = files.normalize_file_name(files.real_stem(path.stem))
+        json_output = output / f"{output_name}.jsonl.gz"
+        saf_output = output / f"{output_name}.processed.saf.zip"
+
+    use_cases.convert_and_package(
+        file=path,
+        title=f"{path.stem} (processed)",
+        date_issued=date_issued,
+        json_output=json_output,
+        saf_output=saf_output,
+    )
 
 
 @subapp.command(name="find_update")

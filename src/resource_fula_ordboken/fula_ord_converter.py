@@ -5,6 +5,7 @@ import unicodedata
 from collections.abc import Generator, Iterable
 
 from resource_fula_ordboken import text
+from resource_fula_ordboken.models import FulaOrd
 
 EM_PROG = re.compile(r"<em>([a-zA-ZåäöÅÄÖ0-9, \-]+)[\.,]?</em>")
 JFR_PROG = re.compile(r"Jfr(.*)</p>")
@@ -38,7 +39,7 @@ class FulaOrdTxt2JsonConverter:
         self.fulaord_ids.add(entry_id)
         return entry_id
 
-    def convert_entry(self, fp) -> Generator[dict, None, None]:  # noqa: ANN001
+    def convert_entry(self, fp) -> Generator[FulaOrd, None, None]:  # noqa: ANN001
         """Generate converted entries from file."""
         next_word = None
         while True:
@@ -93,17 +94,17 @@ class FulaOrdTxt2JsonConverter:
                 jfr_text = jfr_match.group(0)
                 jfr = EM_PROG.findall(jfr_text)
                 entry["jfr"] = jfr
-            yield entry
+            yield FulaOrd(**entry)
 
-    def update_jfr(self, lex_iter: Iterable[dict]) -> Generator[dict, None, None]:
+    def update_jfr(self, lex_iter: Iterable[FulaOrd]) -> Generator[FulaOrd, None, None]:
         """Update jfr field."""
         for obj in lex_iter:
-            if "jfr" in obj:
+            if obj.jfr:
                 new_jfrs = []
-                for jfr in obj["jfr"]:
+                for jfr in obj.jfr:
                     if jfr in self.fulaord_wordforms:
                         new_jfrs.append(self.fulaord_wordforms[jfr])
                     else:
                         new_jfrs.append(jfr)
-                obj["jfr"] = new_jfrs
+                obj.jfr = new_jfrs
             yield obj
