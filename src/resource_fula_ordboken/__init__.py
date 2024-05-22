@@ -10,3 +10,8 @@ def get_version() -> str:
     '0.1.0'
     """
     return __version__
+
+
+def user_agent() -> str:
+    """User agent."""
+    return f"resource-fula-ordboken/{__version__}"

@@ -8,6 +8,7 @@ from pathlib import Path
 import json_arrays
 from simple_archive.use_cases import CreateSimpleArchiveFromCSVWriteToPath, create_unique_path
 
+from resource_fula_ordboken import find_updates
 from resource_fula_ordboken.fula_ord_converter import FulaOrdTxt2JsonConverter
 from resource_fula_ordboken.shared import files
 
@@ -139,7 +140,7 @@ def convert_and_package(
                     with file_path.open(encoding="utf-8") as fp:
                         fulaord = list(converter.convert_entry(fp))
                         json_arrays.dump_to_file(
-                            (entry.model_dump_json() for entry in converter.update_jfr(fulaord)),
+                            (entry.model_dump() for entry in converter.update_jfr(fulaord)),
                             json_output,
                         )
     else:
@@ -160,3 +161,23 @@ def convert_and_package(
     create_simplearchive = CreateSimpleArchiveFromCSVWriteToPath()
 
     create_simplearchive.execute(csv_path, output_path=saf_output, create_zip=True)
+
+
+def create_karp_batch_from_export(
+    raw_entries: Path, *, baseline: Path, output_path: Path, msg: str
+) -> None:
+    """Create Karp batch from karp baseline.
+
+    Args:
+        raw_entries (Path): the current raw entries
+        baseline (Path): the old entries exported from karp
+        output_path (Path): file to write to
+        msg (str): message to use
+    """
+    dumped_cmds = (
+        cmd.serialize()
+        for cmd in find_updates.find_updates_from_export(raw_entries, baseline, msg=msg)
+    )
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    json_arrays.dump_to_file(dumped_cmds, output_path)
