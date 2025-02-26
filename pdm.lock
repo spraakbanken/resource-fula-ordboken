@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:fb509f6a874d52ba12e9e1a6e9cab1ae3650eed61ffc79d09e091fd2422851dd"
+content_hash = "sha256:3613e0d822c50eb021e07e809f66ac207409d064e77c6da9ea2c1150b0828f27"
 
 [[package]]
 name = "annotated-types"
@@ -661,7 +661,7 @@ files = [
 
 [[package]]
 name = "simple-archive"
-version = "0.2.1"
+version = "0.3.0"
 requires_python = ">=3.9"
 summary = "CLI and library for working with Simple Archive Format"
 groups = ["default"]
@@ -670,8 +670,8 @@ dependencies = [
     "typer<1.0.0,>=0.7.0",
 ]
 files = [
-    {file = "simple_archive-0.2.1-py3-none-any.whl", hash = "sha256:67aae3635513815334969ca73b527bbf46a961cbcb0c4607f03df08e553be730"},
-    {file = "simple_archive-0.2.1.tar.gz", hash = "sha256:a28684667f3af9894c72aaac4ed3af4e658a4488788f024887aebeeae5fa592e"},
+    {file = "simple_archive-0.3.0-py3-none-any.whl", hash = "sha256:aaaab5379a2b03518ff9c8c9162c8b0a4f94593483aa7754d61df77dddf8117b"},
+    {file = "simple_archive-0.3.0.tar.gz", hash = "sha256:17030418d4c2f476391d5a2a642bd9526b025228a0211cc384eb2e1161820304"},
 ]
 
 [[package]]
