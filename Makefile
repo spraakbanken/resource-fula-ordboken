@@ -57,8 +57,8 @@ help:
 	@echo ""
 
 PLATFORM := `uname -o`
-REPO := "<REPO-NAME-HERE>"
-PROJECT_SRC := "<SRC-FOLDER-HERE>"
+REPO := resource-fula-ordboken
+PROJECT_SRC := src/resource_fula_ordboken
 
 ifeq (${VIRTUAL_ENV},)
   VENV_NAME = .venv
