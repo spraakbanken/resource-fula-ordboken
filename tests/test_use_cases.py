@@ -9,11 +9,11 @@ def test_package_as_simple_archive() -> None:
     with open(fd, "w", encoding="utf-8") as fp:  # noqa: PTH123, FURB103
         fp.write("text text")
 
-    _output_dir_guard = tempfile.mkdtemp()
-    output_dir = Path(_output_dir_guard)
+    output_dir_guard = tempfile.mkdtemp()
+    output_dir = Path(output_dir_guard)
 
-    _work_dir_guard = tempfile.mkdtemp()
-    workdir = Path(_output_dir_guard)
+    work_dir_guard = tempfile.mkdtemp()
+    workdir = Path(work_dir_guard)
 
     output_path = output_dir / "test.saf.zip"
     use_cases.package_file_as_simple_archive(

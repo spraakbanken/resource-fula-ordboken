@@ -8,7 +8,7 @@ from resource_fula_ordboken import text
 from resource_fula_ordboken.models import FulaOrd
 
 EM_PROG = re.compile(r"<em>([a-zA-ZåäöÅÄÖ0-9, \-]+)[\.,]?</em>")
-JFR_PROG = re.compile(r"Jfr(.*)</p>")
+JFR_PROG = re.compile(r"(?:Jfr|Jämför|Se även|Se också)(.*)</p>")
 ALSO_PROG = re.compile(r"(?:Ä|ä)ven <em>(.*?)</em>")
 
 
@@ -17,6 +17,11 @@ def shave_marks(txt: str) -> str:
     norm_txt = unicodedata.normalize("NFD", txt)
     shaved = "".join(c for c in norm_txt if not unicodedata.combining(c))
     return unicodedata.normalize("NFC", shaved)
+
+
+WORDFORMS: dict[str, list[str]] = {
+    "10-öres-brud": ["tioöresbrud"],
+}
 
 
 class FulaOrdTxt2JsonConverter:
@@ -54,41 +59,43 @@ class FulaOrdTxt2JsonConverter:
             word_text = ""
             while True:
                 try:
-                    _word_text = next(fp)
+                    word_text_ = next(fp)
                 except StopIteration:
                     break
-                if _word_text.startswith("%word_word%"):
-                    next_word = _word_text
+                if word_text_.startswith("%word_word%"):
+                    next_word = word_text_
                     break
                 else:
-                    word_text += _word_text
-            _word_word = text.unescape_str(word_word.split("%word_word%")[-1])
-            if "%word_text%" in _word_word:
-                _tmp_words = _word_word.split("%word_text%")
-                words = text.unescape_str(_tmp_words[0])
-                _word_text = text.unescape_str(_tmp_words[-1])
+                    word_text += word_text_
+            word_word_ = text.unescape_str(word_word.split("%word_word%")[-1])
+            if "%word_text%" in word_word_:
+                tmp_words_ = word_word_.split("%word_text%")
+                words = text.unescape_str(tmp_words_[0])
+                word_text_ = text.unescape_str(tmp_words_[-1])
                 if word_text:
-                    _word_text += word_text
+                    word_text_ += word_text
             else:
-                words = _word_word
-                _word_text = text.unescape_str(word_text.split("%word_text%")[-1].strip())
-            _wordforms = words.split(", ")
-            entry = {"baseform": _wordforms[0].strip()}
+                words = word_word_
+                word_text_ = text.unescape_str(word_text.split("%word_text%")[-1].strip())
+            wordforms_ = words.split(", ")
+            entry = {"baseform": wordforms_[0].strip()}
             entry["id"] = self.generate_id(entry["baseform"])
             self.fulaord_wordforms[entry["baseform"]] = entry["id"]
-            if len(_wordforms) > 1:
-                wordforms = [s.strip() for s in _wordforms[1:]]
+            if len(wordforms_) > 1:
+                wordforms = [s.strip() for s in wordforms_[1:]]
                 for wordform in wordforms:
                     self.fulaord_wordforms[wordform] = entry["id"]
             else:
                 wordforms = []
-            if also_match := ALSO_PROG.findall(_word_text):
+            if also_match := ALSO_PROG.findall(word_text_):
                 for m in also_match:
                     wordforms.extend(m.split(", "))
+            if entry["baseform"] in WORDFORMS:
+                wordforms.extend(WORDFORMS[entry["baseform"]])
             entry["wordforms"] = wordforms
             # entry["word"] = words.strip()
-            entry["text"] = _word_text.strip()
-            jfr_match = JFR_PROG.search(_word_text)
+            entry["text"] = word_text_.strip()
+            jfr_match = JFR_PROG.search(word_text_)
             jfr = None
             if jfr_match:
                 jfr_text = jfr_match.group(0)
