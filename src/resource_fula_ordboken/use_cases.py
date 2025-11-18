@@ -13,6 +13,38 @@ from resource_fula_ordboken.fula_ord_converter import FulaOrdTxt2JsonConverter
 from resource_fula_ordboken.shared import files
 
 
+def run_pipeline(
+    file: Path,
+    output_dir: Path,  # noqa: ARG001
+    workdir: Path | None = None,
+) -> None:
+    """Run pipeline from raw export to converted.
+
+    Args:
+        file (Path): the raw file
+        output_dir (Path): the directory to store the output
+        workdir (Path | None, optional): specify where the temporary files should be stored. Defaults to None.
+    """  # noqa: E501
+    working_dir = workdir or Path("tmp")
+    working_dir = create_unique_path(working_dir, file.stem)
+    working_dir.mkdir(parents=True)
+
+    metadata = create_metadata(file.name)  # noqa: F841
+
+
+def create_metadata(file_name: str) -> dict[str, str]:
+    """Create metadata for Fula Ordboken."""
+    date_issued = file_name.rsplit(" ", maxsplit=1)[-1]
+    title = f"Fula Ordboken ({date_issued})"
+
+    return {
+        "dc.title": title,
+        "dc.contributor.author": "Dagrin, Bengt",
+        "dc.date.issued": date_issued,
+        "local.branding": "Språkbanken Text",
+    }
+
+
 def package_file_as_simple_archive(
     file: Path,
     *,

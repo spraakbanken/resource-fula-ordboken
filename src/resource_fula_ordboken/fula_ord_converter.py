@@ -1,6 +1,7 @@
 """Converter for Fula Ordboken."""
 
 import re
+import typing as t
 import unicodedata
 from collections.abc import Generator, Iterable
 
@@ -10,6 +11,14 @@ from resource_fula_ordboken.models import FulaOrd
 EM_PROG = re.compile(r"<em>([a-zA-ZåäöÅÄÖ0-9, \-]+)[\.,]?</em>")
 JFR_PROG = re.compile(r"(?:Jfr|Jämför|Se även|Se också)(.*)</p>")
 ALSO_PROG = re.compile(r"(?:Ä|ä)ven <em>(.*?)</em>")
+
+
+class _Entry(t.TypedDict):
+    baseform: str
+    id: str
+    wordforms: list[str]
+    text: str
+    jfr: list[str] | None
 
 
 def shave_marks(txt: str) -> str:
@@ -78,30 +87,36 @@ class FulaOrdTxt2JsonConverter:
                 words = word_word_
                 word_text_ = text.unescape_str(word_text.split("%word_text%")[-1].strip())
             wordforms_ = words.split(", ")
-            entry = {"baseform": wordforms_[0].strip()}
-            entry["id"] = self.generate_id(entry["baseform"])
-            self.fulaord_wordforms[entry["baseform"]] = entry["id"]
+            # entry: _Entry = {"baseform": wordforms_[0].strip()}
+            baseform = wordforms_[0].strip()
+            entry_id = self.generate_id(baseform)
+            # entry["id"] = self.generate_id(entry["baseform"])
+            # self.fulaord_wordforms[entry["baseform"]] = entry["id"]
+            self.fulaord_wordforms[baseform] = entry_id
             if len(wordforms_) > 1:
                 wordforms = [s.strip() for s in wordforms_[1:]]
                 for wordform in wordforms:
-                    self.fulaord_wordforms[wordform] = entry["id"]
+                    self.fulaord_wordforms[wordform] = entry_id
             else:
                 wordforms = []
             if also_match := ALSO_PROG.findall(word_text_):
                 for m in also_match:
                     wordforms.extend(m.split(", "))
-            if entry["baseform"] in WORDFORMS:
-                wordforms.extend(WORDFORMS[entry["baseform"]])
-            entry["wordforms"] = wordforms
+            if baseform in WORDFORMS:
+                wordforms.extend(WORDFORMS[baseform])
+            # entry["wordforms"] = wordforms
             # entry["word"] = words.strip()
-            entry["text"] = word_text_.strip()
+            # entry["text"] = word_text_.strip()
+            entry_text = word_text_.strip()
             jfr_match = JFR_PROG.search(word_text_)
             jfr = None
             if jfr_match:
                 jfr_text = jfr_match.group(0)
                 jfr = EM_PROG.findall(jfr_text)
-                entry["jfr"] = jfr
-            yield FulaOrd(**entry)
+                # entry["jfr"] = jfr
+            yield FulaOrd(
+                baseform=baseform, id=entry_id, wordforms=wordforms, text=entry_text, jfr=jfr
+            )
 
     def update_jfr(self, lex_iter: Iterable[FulaOrd]) -> Generator[FulaOrd, None, None]:
         """Update jfr field."""
