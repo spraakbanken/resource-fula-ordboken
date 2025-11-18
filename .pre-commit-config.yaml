@@ -1,34 +1,58 @@
-# See https://pre-commit.com for more information
-# See https://pre-commit.com/hooks.html for more hooks
+fail_fast: false
+
+exclude: |
+  (?x)^(
+    .github/workflows/release.yml
+  )$
+
 repos:
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.8.15
+    hooks:
+      - id: uv-lock
+      - id: uv-export
+        args:
+          [
+            "--dev",
+            "--format=requirements-txt",
+            "--no-hashes",
+            "--no-emit-project",
+            "--output-file=tests/requirements-testing.lock",
+          ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: check-yaml
-        stages: [commit]
+        args: [--allow-multiple-documents]
       - id: check-json
-        stages: [commit]
       - id: check-toml
-        stages: [commit]
       - id: check-merge-conflict
-        stages: [commit]
-      - id: check-case-conflict
-        stages: [commit]
       - id: detect-private-key
-        stages: [commit]
-      # - id: end-of-file-fixer
       - id: check-added-large-files
-        stages: [commit]
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Ruff version.
-    rev: v0.9.9
+  # zizmor detects security vulnerabilities in GitHub Actions workflows.
+  # Additional configuration for the tool is found in `.github/zizmor.yml`
+  - repo: https://github.com/woodruffw/zizmor-pre-commit
+    rev: v1.6.0
     hooks:
-      # Run the linter.
-      - id: ruff
-      # Run the formatter.
+      - id: zizmor
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.33.0
+    hooks:
+      - id: check-github-workflows
+      - id: check-jsonschema
+        files: src/.*/metadata.yaml
+        args: ["--schemafile", ".config/metadata-schema.json"]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version
+    rev: v0.12.11
+    hooks:
+      # Run the linter
+      - id: ruff-check
+      # Run the formatter
       - id: ruff-format
   - repo: https://github.com/crate-ci/committed
-    rev: v1.0.20
+    rev: v1.1.7
     hooks:
       - id: committed
         stages: [commit-msg]
