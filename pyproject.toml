@@ -1,7 +1,7 @@
 [project]
 name = "resource-fula-ordboken"
 version = "0.2.0"
-description = "Default template for PDM package"
+description = "Program for converting sources for Fula ordboken to Karp."
 authors = [
     { name = "Språkbanken Text", email = "sb-info@svenska.gu.se" },
     { name = "Kristoffer Andersson", email = "kristoffer.andersson@gu.se" },
@@ -20,8 +20,8 @@ readme = "README.md"
 license = { text = "MIT" }
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.9.6,<0.10.0"]
+build-backend = "uv_build"
 
 [project.scripts]
 resource-fula-ordboken = "resource_fula_ordboken.cli:subapp"
