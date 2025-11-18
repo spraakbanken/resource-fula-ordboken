@@ -46,7 +46,7 @@ def find_updates_from_export(path: Path, baseline: Path, *, msg: str) -> list[Fu
         DeleteFulaOrdEntry(
             user=resource_fula_ordboken.user_agent(),
             message=msg,
-            resourceId="fulaord",
+            resource_id="fulaord",
             id=base[key].id,
             version=base[key].version,
         )
@@ -73,7 +73,7 @@ def find_updates_from_export(path: Path, baseline: Path, *, msg: str) -> list[Fu
         else:
             batch.append(
                 AddFulaOrdEntry(
-                    resourceId="fulaord",
+                    resource_id="fulaord",
                     entry=curr_entry,
                     user=resource_fula_ordboken.user_agent(),
                     message=msg,

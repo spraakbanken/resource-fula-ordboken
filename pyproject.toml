@@ -1,7 +1,7 @@
 [project]
 name = "resource-fula-ordboken"
 version = "0.2.0"
-description = "Default template for PDM package"
+description = "Program for converting sources for Fula ordboken to Karp."
 authors = [
     { name = "Språkbanken Text", email = "sb-info@svenska.gu.se" },
     { name = "Kristoffer Andersson", email = "kristoffer.andersson@gu.se" },
@@ -11,7 +11,7 @@ dependencies = [
     "typer>=0.12.3",
     "tqdm>=4.66.2",
     "karp-lex-types>=0.7.2",
-    "simple-archive>=0.2.1",
+    "simple-archive>=0.3.0",
     "chardet>=5.2.0",
     "orjson>=3.10.3",
 ]
@@ -20,18 +20,18 @@ readme = "README.md"
 license = { text = "MIT" }
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["uv_build>=0.9.6,<0.10.0"]
+build-backend = "uv_build"
 
+[project.scripts]
+resource-fula-ordboken = "resource_fula_ordboken.cli:subapp"
 
-[tool.pdm]
-distribution = true
-
-[tool.pdm.dev-dependencies]
+[dependency-groups]
 dev = [
-    "ruff>=0.4.1",
-    "mypy>=1.10.0",
-    "pytest>=8.1.1",
-    "pytest-cov>=5.0.0",
-    "bump-my-version>=0.21.1",
+    "bump-my-version>=0.32.2",
+    "mypy>=1.15.0",
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.9.7",
+    "syrupy>=4.8.2",
 ]

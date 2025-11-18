@@ -1,6 +1,6 @@
 
 # use this Makefile as base in your project by running
-# git remote add make https://github.com/spraakbanken/python-pdm-make-conf
+# git remote add make https://github.com/spraakbanken/python-uv-make-conf
 # git fetch make
 # git merge --allow-unrelated-histories make/main
 #
@@ -57,12 +57,12 @@ help:
 	@echo ""
 
 PLATFORM := `uname -o`
-REPO := "resource-fula-ordboken"
-PROJECT_SRC := "src/resource_fula_ordboken"
+REPO := resource-fula-ordboken
+PROJECT_SRC := src/resource_fula_ordboken
 
 ifeq (${VIRTUAL_ENV},)
   VENV_NAME = .venv
-  INVENV = pdm run
+  INVENV = uv run
 else
   VENV_NAME = ${VIRTUAL_ENV}
   INVENV =
@@ -83,11 +83,16 @@ dev: install-dev
 
 # setup development environment
 install-dev:
-	pdm install --dev
+	uv sync --all-packages --dev
 
 # setup production environment
 install:
-	pdm sync --prod
+	uv sync --all-packages --no-dev
+
+lock: uv.lock
+
+uv.lock: pyproject.toml
+	uv lock
 
 .PHONY: test
 test:
@@ -134,7 +139,7 @@ check-fmt:
 	${INVENV} ruff format --check ${PROJECT_SRC} ${tests}
 
 build:
-	pdm build
+	uvx --from build pyproject-build --installer uv
 
 branch := "main"
 publish:
@@ -146,11 +151,12 @@ prepare-release: update-changelog tests/requirements-testing.lock
 
 # we use lock extension so that dependabot doesn't pick up changes in this file
 tests/requirements-testing.lock: pyproject.toml
-	pdm export --dev --format requirements --output $@
+	uv export --dev --format requirements-txt --no-hashes --no-emit-project --output-file $@
 
 .PHONY: update-changelog
 update-changelog: CHANGELOG.md
 
+.PHONY: CHANGELOG.md
 CHANGELOG.md:
 	git cliff --unreleased --prepend $@
 
@@ -158,3 +164,5 @@ CHANGELOG.md:
 .PHONY: snapshot-update
 snapshot-update:
 	${INVENV} pytest --snapshot-update
+
+### === project targets below this line ===
