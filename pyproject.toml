@@ -4,7 +4,6 @@ version = "0.2.0"
 description = "Program for converting sources for Fula ordboken to Karp."
 authors = [
     { name = "Språkbanken Text", email = "sb-info@svenska.gu.se" },
-    { name = "Kristoffer Andersson", email = "kristoffer.andersson@gu.se" },
 ]
 dependencies = [
     "json-arrays>=0.15.0",
