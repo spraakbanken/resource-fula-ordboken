@@ -1,8 +1,8 @@
 """Converter for Fula Ordboken."""
 
 import re
-import typing as t
 import unicodedata
+from collections import defaultdict
 from collections.abc import Generator, Iterable
 
 from resource_fula_ordboken import text
@@ -13,12 +13,12 @@ JFR_PROG = re.compile(r"(?:Jfr|Jämför|Se även|Se också)(.*)</p>")
 ALSO_PROG = re.compile(r"(?:Ä|ä)ven <em>(.*?)</em>")
 
 
-class _Entry(t.TypedDict):
-    baseform: str
-    id: str
-    wordforms: list[str]
-    text: str
-    jfr: list[str] | None
+# class _Entry(t.TypedDict):
+#     baseform: str
+#     id: str
+#     wordforms: list[str]
+#     text: str
+#     jfr: list[str] | None
 
 
 def shave_marks(txt: str) -> str:
@@ -38,20 +38,8 @@ class FulaOrdTxt2JsonConverter:
 
     def __init__(self) -> None:
         """Construct the converter."""
-        self.fulaord_ids: set[str] = set()
-        self.fulaord_wordforms: dict[str, str] = {}
-
-    def generate_id(self, baseform: str) -> str:
-        """Generate id unique for this resource."""
-        i = 1
-        baseform = baseform.replace(" ", "_").replace(",", "_").lower()
-        baseform = shave_marks(baseform)
-        entry_id = f"{baseform}..{i}"
-        while entry_id in self.fulaord_ids:
-            i += 1
-            entry_id = f"{baseform}..{i}"
-        self.fulaord_ids.add(entry_id)
-        return entry_id
+        # self.fulaord_ids: set[str] = set()
+        self.fulaord_wordforms: dict[str, set[str]] = defaultdict(set)
 
     def convert_entry(self, fp) -> Generator[FulaOrd, None, None]:  # noqa: ANN001
         """Generate converted entries from file."""
@@ -89,14 +77,14 @@ class FulaOrdTxt2JsonConverter:
             wordforms_ = words.split(", ")
             # entry: _Entry = {"baseform": wordforms_[0].strip()}
             baseform = wordforms_[0].strip()
-            entry_id = self.generate_id(baseform)
+            # entry_id = self.generate_id(baseform)
             # entry["id"] = self.generate_id(entry["baseform"])
             # self.fulaord_wordforms[entry["baseform"]] = entry["id"]
-            self.fulaord_wordforms[baseform] = entry_id
+            self.fulaord_wordforms[baseform].add(baseform)
             if len(wordforms_) > 1:
                 wordforms = [s.strip() for s in wordforms_[1:]]
                 for wordform in wordforms:
-                    self.fulaord_wordforms[wordform] = entry_id
+                    self.fulaord_wordforms[wordform].add(baseform)
             else:
                 wordforms = []
             if also_match := ALSO_PROG.findall(word_text_):
@@ -114,19 +102,17 @@ class FulaOrdTxt2JsonConverter:
                 jfr_text = jfr_match.group(0)
                 jfr = EM_PROG.findall(jfr_text)
                 # entry["jfr"] = jfr
-            yield FulaOrd(
-                baseform=baseform, id=entry_id, wordforms=wordforms, text=entry_text, jfr=jfr
-            )
+            yield FulaOrd(baseform=baseform, wordforms=wordforms, text=entry_text, jfr=jfr)
 
     def update_jfr(self, lex_iter: Iterable[FulaOrd]) -> Generator[FulaOrd, None, None]:
         """Update jfr field."""
         for obj in lex_iter:
             if obj.jfr:
-                new_jfrs = []
+                new_jfrs = set()
                 for jfr in obj.jfr:
                     if jfr in self.fulaord_wordforms:
-                        new_jfrs.append(self.fulaord_wordforms[jfr])
+                        new_jfrs.update(self.fulaord_wordforms[jfr])
                     else:
-                        new_jfrs.append(jfr)
-                obj.jfr = new_jfrs
+                        new_jfrs.add(jfr)
+                obj.jfr = list(new_jfrs)
             yield obj

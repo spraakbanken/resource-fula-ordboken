@@ -8,7 +8,7 @@ class FulaOrd(pydantic.BaseModel):
     """Data model for a Fula Ordboken entry."""
 
     baseform: str
-    id: str
+    # id: str
     wordforms: list[str]
     text: str
     jfr: list[str] | None = None
