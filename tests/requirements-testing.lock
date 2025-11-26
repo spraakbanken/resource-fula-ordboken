@@ -26,7 +26,7 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   tqdm
 coverage==7.12.0
     # via pytest-cov
-exceptiongroup==1.3.0 ; python_full_version < '3.11'
+exceptiongroup==1.3.1 ; python_full_version < '3.11'
     # via
     #   anyio
     #   pytest
@@ -97,7 +97,7 @@ rich==14.2.0
     #   typer
 rich-click==1.9.4
     # via bump-my-version
-ruff==0.14.5
+ruff==0.14.6
 shellingham==1.5.4
     # via typer
 simple-archive==0.3.0
