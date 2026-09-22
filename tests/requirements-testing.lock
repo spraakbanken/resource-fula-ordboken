@@ -2,7 +2,7 @@
 #    uv export --dev --format=requirements-txt --no-hashes --no-emit-project --output-file=tests/requirements-testing.lock
 annotated-types==0.7.0
     # via pydantic
-chardet==5.2.0
+chardet==7.6.0
     # via resource-fula-ordboken
 click==8.2.1
     # via typer

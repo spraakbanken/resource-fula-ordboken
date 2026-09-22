@@ -9,7 +9,7 @@ authors = [
   { name = "Språkbanken Text", email = "sb-info@svenska.gu.se" },
 ]
 dependencies = [
-  "chardet>=5.2.0",
+  "chardet>=7.4.1",
   "json-arrays>=0.15.0",
   "karp-lex-types>=0.7.2",
   "orjson>=3.10.3",
