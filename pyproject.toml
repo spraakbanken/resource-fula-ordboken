@@ -2,35 +2,37 @@
 name = "resource-fula-ordboken"
 version = "0.2.0"
 description = "Program for converting sources for Fula ordboken to Karp."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
 authors = [
-    { name = "Språkbanken Text", email = "sb-info@svenska.gu.se" },
+  { name = "Språkbanken Text", email = "sb-info@svenska.gu.se" },
 ]
 dependencies = [
-    "json-arrays>=0.15.0",
-    "typer>=0.12.3",
-    "tqdm>=4.66.2",
-    "karp-lex-types>=0.7.2",
-    "simple-archive>=0.3.0",
-    "chardet>=5.2.0",
-    "orjson>=3.10.3",
+  "chardet>=7.4.1",
+  "json-arrays>=0.15.0",
+  "karp-lex-types>=0.7.2",
+  "orjson>=3.10.3",
+  "simple-archive>=0.3.0",
+  "tqdm>=4.66.2",
+  "typer>=0.12.3",
 ]
-requires-python = ">=3.10"
-readme = "README.md"
-license = { text = "MIT" }
-
-[build-system]
-requires = ["uv_build>=0.9.6,<0.10.0"]
-build-backend = "uv_build"
 
 [project.scripts]
 resource-fula-ordboken = "resource_fula_ordboken.cli:subapp"
 
 [dependency-groups]
 dev = [
-    "bump-my-version>=0.32.2",
-    "mypy>=1.15.0",
-    "pytest>=8.3.4",
-    "pytest-cov>=6.0.0",
-    "ruff>=0.9.7",
-    "syrupy>=4.8.2",
+  "pytest>=8.3.4",
+  "pytest-cov>=6.0.0",
+  "ruff>=0.9.7",
+  "syrupy>=4.8.2",
+  "ty>=0.0.81",
 ]
+
+[build-system]
+requires = ["uv_build>=0.11,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv]
+exclude-newer = "P7D"

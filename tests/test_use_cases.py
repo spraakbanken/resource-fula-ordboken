@@ -6,7 +6,7 @@ from resource_fula_ordboken import use_cases
 
 def test_package_as_simple_archive() -> None:
     fd, file_to_package = tempfile.mkstemp(suffix=".txt", text=True)
-    with open(fd, "w", encoding="utf-8") as fp:  # noqa: PTH123, FURB103
+    with open(fd, "w", encoding="utf-8") as fp:  # noqa: PTH123
         fp.write("text text")
 
     output_dir_guard = tempfile.mkdtemp()

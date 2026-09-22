@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from chardet import UniversalDetector
-from chardet.resultdict import ResultDict
+from chardet.pipeline import DetectionDict
 
 from resource_fula_ordboken import text
 
@@ -49,7 +49,7 @@ def real_stem(possible_stem: str) -> str:
         path = Path(path.stem)
 
 
-def detect_encoding(path: Path) -> ResultDict:
+def detect_encoding(path: Path) -> DetectionDict:
     """Detect encoding of file by reading as little as possible.
 
     Args:
