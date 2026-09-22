@@ -48,7 +48,7 @@ def find_updates_from_export(path: Path, baseline: Path, *, msg: str) -> list[Fu
             message=msg,
             resource_id="fulaord",
             id=base[key].id,
-            version=base[key].version,
+            version=base[key].version,  # ty: ignore[invalid-argument-type]
         )
         for key in tqdm(base, desc="Finding entries to remove", unit=" entries")
         if key not in curr
@@ -62,9 +62,9 @@ def find_updates_from_export(path: Path, baseline: Path, *, msg: str) -> list[Fu
             if curr_entry != base[key].entry:
                 batch.append(
                     UpdateFulaOrdEntry(
-                        resourceId=base[key].resource,
+                        resource_id=base[key].resource,  # ty: ignore[invalid-argument-type]
                         id=base[key].id,
-                        version=base[key].version,
+                        version=base[key].version,  # ty: ignore[invalid-argument-type]
                         entry=curr_entry,
                         user=resource_fula_ordboken.user_agent(),
                         message=msg,
