@@ -64,6 +64,7 @@ tomli==2.3.0 ; python_full_version <= '3.11'
     #   pytest
 tqdm==4.67.1
     # via resource-fula-ordboken
+ty==0.0.81
 typer==0.20.0
     # via
     #   resource-fula-ordboken
